@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Solicitud de Horas Extra</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    select, input, button {
+      padding: 8px;
+      margin-top: 5px;
+      width: 100%;
+    }
+    .operario {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .operario label {
+      font-weight: normal;
+    }
+  </style>
+</head>
+<body>
+  <h2>Formulario - Solicitud de Horas Extra</h2>
+
+  <form id="formulario">
+    <!-- 1. Correo del supervisor -->
+    <label for="supervisorCorreo">Correo del Supervisor:</label>
+    <input type="email" id="supervisorCorreo" name="supervisorCorreo" required>
+
+    <!-- 2. Área de trabajo -->
+    <label for="area">Área de trabajo:</label>
+    <select id="area" name="area" required>
+      <option value="">--Seleccione--</option>
+      <option value="Producción">Producción</option>
+      <option value="Mantenimiento">Mantenimiento</option>
+      <option value="Logística">Logística</option>
+    </select>
+
+    <!-- 3. Operarios -->
+    <label>Seleccione Operarios y Turno:</label>
+    <div id="operarios">
+      <!-- Ejemplo de operario -->
+      <div class="operario">
+        <input type="checkbox" id="op1" value="123">
+        <label for="op1">Juan Pérez (ID: 123)</label>
+        <select id="turno_op1">
+          <option value="">--Turno--</option>
+          <option value="Diurno">Diurno</option>
+          <option value="Nocturno">Nocturno</option>
+        </select>
+      </div>
+
+      <div class="operario">
+        <input type="checkbox" id="op2" value="456">
+        <label for="op2">María López (ID: 456)</label>
+        <select id="turno_op2">
+          <option value="">--Turno--</option>
+          <option value="Diurno">Diurno</option>
+          <option value="Nocturno">Nocturno</option>
+        </select>
+      </div>
+
+      <div class="operario">
+        <input type="checkbox" id="op3" value="789">
+        <label for="op3">Carlos Ruiz (ID: 789)</label>
+        <select id="turno_op3">
+          <option value="">--Turno--</option>
+          <option value="Diurno">Diurno</option>
+          <option value="Nocturno">Nocturno</option>
+        </select>
+      </div>
+    </div>
+
+    <button type="submit">Enviar Solicitud</button>
+  </form>
+
+  <p id="respuesta"></p>
+
+  <script>
+    document.getElementById("formulario").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const supervisorCorreo = document.getElementById("supervisorCorreo").value;
+      const area = document.getElementById("area").value;
+
+      // recolectar operarios seleccionados
+      const operarios = [];
+      document.querySelectorAll(".operario").forEach(div => {
+        const checkbox = div.querySelector("input[type=checkbox]");
+        const turno = div.querySelector("select").value;
+        if (checkbox.checked && turno) {
+          operarios.push({
+            id: checkbox.value,
+            nombre: div.querySelector("label").innerText,
+            turno: turno
+          });
+        }
+      });
+
+      if (operarios.length === 0) {
+        alert("Seleccione al menos un operario y turno");
+        return;
+      }
+
+      // enviar al Apps Script (doPost)
+      fetch("TU_URL_WEBAPP", {
+        method: "POST",
+        body: JSON.stringify({
+          supervisorCorreo: supervisorCorreo,
+          area: area,
+          operarios: operarios
+        })
+      })
+      .then(res => res.text())
+      .then(txt => {
+        document.getElementById("respuesta").innerText = txt;
+      })
+      .catch(err => {
+        document.getElementById("respuesta").innerText = "Error: " + err;
+      });
+    });
+  </script>
+</body>
+</html>
