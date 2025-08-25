@@ -1,101 +1,159 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Solicitud de Horas Extra</title>
+  <title>Solicitud de Horas Extra - INCOLBEST</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    select, input, button {
-      padding: 8px;
-      margin-top: 5px;
-      width: 100%;
-    }
-    .operario {
-      margin: 10px 0;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    .operario label {
-      font-weight: normal;
-    }
-  </style>
+        #encabezado button {
+            background-color:#0098d5; 
+            color:white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        #encabezado button:hover {
+            background-color: #1b4fa3;
+        }
+
+        /* 🔹 Botón dentro del div con class="panel" */
+        .panel button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .panel button:hover {
+            background-color: #1e7e34;
+        }
+    </style>
 </head>
-<body>
-  <h2>Formulario - Solicitud de Horas Extra</h2>
+<body style="margin:0; font-family:Arial, sans-serif; background:linear-gradient(to bottom, #0098d5, #ffffff); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;">
 
-  <form id="formulario">
-    <!-- 1. Correo del supervisor -->
-    <label for="supervisorCorreo">Correo del Supervisor:</label>
-    <input type="email" id="supervisorCorreo" name="supervisorCorreo" required>
+  <!-- Encabezado con logo -->
+  <div id="encabezado" style="width:100%; background-color:#ffffff; padding:15px; text-align:center; border-bottom:3px solid #0098d5;">
+    <button>Atras</button>
+    <img src="https://www.incolbest.com/fileadmin/incolbest/img/ld/bloques-logo.png" alt="INCOLBEST" style="max-width:280px;">
+  </div>
 
-    <!-- 2. Área de trabajo -->
-    <label for="area">Área de trabajo:</label>
-    <select id="area" name="area" required>
-      <option value="">--Seleccione--</option>
-      <option value="Producción">Producción</option>
-      <option value="Mantenimiento">Mantenimiento</option>
-      <option value="Logística">Logística</option>
-    </select>
+  <!-- Contenedor del formulario tipo login -->
+  <div style="background-color:white; margin-top:40px; padding:40px; border-radius:15px; box-shadow:0 6px 15px rgba(0,0,0,0.15); width:380px; text-align:center; border-top:6px solid #0098d5; transition:transform 0.3s;">
+    
+    <h2 style="color:#0098d5; margin-bottom:25px; font-size:22px;">Solicitud de Horas Extra</h2>
 
-    <!-- 3. Operarios -->
-    <label>Seleccione Operarios y Turno:</label>
-    <div id="operarios">
-      <!-- Ejemplo de operario -->
-      <div class="operario">
-        <input type="checkbox" id="op1" value="123">
-        <label for="op1">Juan Pérez (ID: 123)</label>
-        <select id="turno_op1">
-          <option value="">--Turno--</option>
-          <option value="Diurno">Diurno</option>
-          <option value="Nocturno">Nocturno</option>
-        </select>
-      </div>
+    <form id="formulario" style="display:flex; flex-direction:column; gap:18px; text-align:left;">
+      
+      <!-- Supervisor -->
+      <label for="supervisorCorreo" style="color:#0098d5; font-weight:bold; font-size:14px;">📧 Correo del Supervisor</label>
+      <input type="email" id="supervisorCorreo" required 
+             style="padding:12px; border:1px solid #ccc; border-radius:8px; outline:none; font-size:14px; transition:all 0.3s;">
+      
+      <!-- Área -->
+      <label for="area" style="color:#0098d5; font-weight:bold; font-size:14px;">🏭 Área de trabajo</label>
+      <select id="area" required 
+              style="padding:12px; border:1px solid #ccc; border-radius:8px; font-size:14px; transition:all 0.3s;">
+        <option value="">--Seleccione--</option>
+        <option value="Producción">Producción</option>
+        <option value="Mantenimiento">Mantenimiento</option>
+        <option value="Logística">Logística</option>
+      </select>
 
-      <div class="operario">
-        <input type="checkbox" id="op2" value="456">
-        <label for="op2">María López (ID: 456)</label>
-        <select id="turno_op2">
-          <option value="">--Turno--</option>
-          <option value="Diurno">Diurno</option>
-          <option value="Nocturno">Nocturno</option>
-        </select>
-      </div>
+      <!-- Operarios -->
+      <label style="color:#0098d5; font-weight:bold; font-size:14px;">👷‍♂️ Seleccione Operarios y Turno</label>
+      <div id="operarios" style="margin-bottom:10px;"></div>
 
-      <div class="operario">
-        <input type="checkbox" id="op3" value="789">
-        <label for="op3">Carlos Ruiz (ID: 789)</label>
-        <select id="turno_op3">
-          <option value="">--Turno--</option>
-          <option value="Diurno">Diurno</option>
-          <option value="Nocturno">Nocturno</option>
-        </select>
-      </div>
-    </div>
+      <!-- Botón -->
+      <button type="submit" 
+              style="background-color:#0098d5; color:white; padding:14px; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer; transition:all 0.3s; text-align:center;">
+        Enviar Solicitud
+      </button>
+    </form>
 
-    <button type="submit">Enviar Solicitud</button>
-  </form>
+    <p id="respuesta" style="margin-top:20px; color:#0098d5; font-weight:bold;"></p>
+  </div>
 
-  <p id="respuesta"></p>
+  <table style="margin:20px; width:80%; border-collapse:collapse; font-family:Arial, sans-serif; font-size:14px; border:1px solid #ccc;">
+    <thead style="background:#f2f2f2; text-align:left;">
+        <tr>
+            <th style="padding:8px; border:1px solid #ccc;">ID</th>
+            <th style="padding:8px; border:1px solid #ccc;">Usuario</th>
+            <th style="padding:8px; border:1px solid #ccc;">Área</th>
+            <th style="padding:8px; border:1px solid #ccc;">Planta</th>
+            <th style="padding:8px; border:1px solid #ccc;">Turno</th>
+            <th style="padding:8px; border:1px solid #ccc;">Horas Extra</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        </tr>
+    </tbody>
+</table>
 
   <script>
+    // Simulación de efectos hover (inputs y botones) en inline CSS
+    document.addEventListener("mouseover", function(e) {
+      if (e.target.tagName === "BUTTON") {
+        e.target.style.backgroundColor = "#007bb2";
+      }
+      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") {
+        e.target.style.borderColor = "#0098d5";
+        e.target.style.boxShadow = "0 0 6px rgba(0,152,213,0.5)";
+      }
+    });
+
+    document.addEventListener("mouseout", function(e) {
+      if (e.target.tagName === "BUTTON") {
+        e.target.style.backgroundColor = "#0098d5";
+      }
+      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") {
+        e.target.style.borderColor = "#ccc";
+        e.target.style.boxShadow = "none";
+      }
+    });
+
+    // Cuando selecciona un área, cargar operarios desde Apps Script
+    document.getElementById("area").addEventListener("change", function() {
+      const area = this.value;
+      if (!area) return;
+
+      google.script.run.withSuccessHandler(function(operarios) {
+        const contenedor = document.getElementById("operarios");
+        contenedor.innerHTML = "";
+
+        operarios.forEach(op => {
+          const div = document.createElement("div");
+          div.setAttribute("style",
+            "margin:8px 0; padding:10px; border:1px solid #eee; border-radius:8px; background:#f9f9f9; display:flex; align-items:center; gap:8px; transition:all 0.3s;"
+          );
+          div.innerHTML = `
+            <input type="checkbox" id="op${op.id}" value="${op.id}" style="transform:scale(1.2); cursor:pointer;">
+            <label for="op${op.id}" style="flex:1; color:#0098d5; font-size:14px;">${op.nombre} (ID: ${op.id})</label>
+            <select id="turno_op${op.id}" style="padding:6px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
+              <option value="">--Turno--</option>
+              <option value="Diurno">Diurno</option>
+              <option value="Nocturno">Nocturno</option>
+            </select>
+          `;
+          contenedor.appendChild(div);
+        });
+      }).getOperariosPorArea(area);
+    });
+
+    // Enviar formulario
     document.getElementById("formulario").addEventListener("submit", function(e) {
       e.preventDefault();
 
       const supervisorCorreo = document.getElementById("supervisorCorreo").value;
       const area = document.getElementById("area").value;
 
-      // recolectar operarios seleccionados
       const operarios = [];
-      document.querySelectorAll(".operario").forEach(div => {
+      document.querySelectorAll("#operarios div").forEach(div => {
         const checkbox = div.querySelector("input[type=checkbox]");
         const turno = div.querySelector("select").value;
         if (checkbox.checked && turno) {
@@ -112,21 +170,12 @@
         return;
       }
 
-      // enviar al Apps Script (doPost)
-      fetch("TU_URL_WEBAPP", {
-        method: "POST",
-        body: JSON.stringify({
-          supervisorCorreo: supervisorCorreo,
-          area: area,
-          operarios: operarios
-        })
-      })
-      .then(res => res.text())
-      .then(txt => {
-        document.getElementById("respuesta").innerText = txt;
-      })
-      .catch(err => {
-        document.getElementById("respuesta").innerText = "Error: " + err;
+      google.script.run.withSuccessHandler(function(respuesta) {
+        document.getElementById("respuesta").innerText = respuesta;
+      }).procesarOrden({
+        supervisorCorreo: supervisorCorreo,
+        area: area,
+        operarios: operarios
       });
     });
   </script>
