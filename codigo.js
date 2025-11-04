@@ -1,86 +1,54 @@
-// ID del Spreadsheet donde están las tablas
-const SPREADSHEET_ID = "TU_SPREADSHEET_ID";
-const SHEET_ORDENES = "OrdenesHorasExtra";
+/*let MySheets = SpreadsheetApp.getActiveSpreadsheet();
+let LoginSheet = MySheets.getSheetByName("");
+const SPREADSHEET_ID = "1bVdqtUEhBZ5jYE2LPLA5TG5JqLpble1MsUfcbZszBAY";
+const ss = SpreadsheetApp.openById(SPREADSHEET_ID);*/
 
-/**
- * 1️⃣ Maneja datos del formulario HTML (POST)
- */
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
-
-    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_ORDENES);
-
-    // Guardar cada operario en una fila
-    data.operarios.forEach(op => {
-      sheet.appendRow([
-        new Date(),                 // fecha de creación
-        data.supervisorCorreo,      // supervisor
-        data.area,                  // área de trabajo
-        op.id,                      // id del operario
-        op.turno,                   // diurno/nocturno
-        "Pendiente",                // estado
-        ""                          // respuesta jefe
-      ]);
-    });
-
-    // Enviar correo al jefe
-    enviarCorreoJefe(data);
-
-    return ContentService.createTextOutput("Orden registrada");
-  } catch (err) {
-    return ContentService.createTextOutput("Error: " + err);
-  }
+function doGet() {
+  var template = HtmlService.createTemplateFromFile('interfazPrincipal');
+  var html = template.evaluate();
+  return html;
 }
 
-/**
- * 2️⃣ Enviar correo al jefe con botones aprobar/rechazar
- */
-function enviarCorreoJefe(data) {
-  const jefeCorreo = "correo_del_jefe@empresa.com";
-
-  let listaOperarios = data.operarios.map(o => 
-    `- ${o.nombre} (${o.turno})`
-  ).join("<br>");
-
-  // Links de aprobación/rechazo (pasan parámetros en URL)
-  const urlBase = ScriptApp.getService().getUrl();
-  const urlAprobar = `${urlBase}?action=aprobar&supervisor=${encodeURIComponent(data.supervisorCorreo)}`;
-  const urlRechazar = `${urlBase}?action=rechazar&supervisor=${encodeURIComponent(data.supervisorCorreo)}`;
-
-  const htmlBody = `
-    <p>Se solicitó horas extra para el área <b>${data.area}</b></p>
-    <p><b>Supervisor:</b> ${data.supervisorCorreo}</p>
-    <p><b>Operarios:</b><br>${listaOperarios}</p>
-    <p>¿Desea aprobar la solicitud?</p>
-    <a href="${urlAprobar}" style="padding:10px; background:green; color:white; text-decoration:none;">✅ Aprobar</a>
-    <a href="${urlRechazar}" style="padding:10px; background:red; color:white; text-decoration:none;">❌ Rechazar</a>
-  `;
-
-  MailApp.sendEmail({
-    to: jefeCorreo,
-    subject: "Solicitud de Horas Extra",
-    htmlBody: htmlBody
-  });
+function include(fileName) {
+  return HtmlService.createHtmlOutputFromFile(fileName).getContent();
 }
 
-/**
- * 3️⃣ Manejar clics del jefe en el correo
- */
-function doGet(e) {
-  const action = e.parameter.action;
-  const supervisor = e.parameter.supervisor;
+function loadLogin() {
+  return HtmlService.createHtmlOutputFromFile("login").getContent();
+}
 
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_ORDENES);
-  const data = sheet.getDataRange().getValues();
+function irInterfazPrincipal() {
+  return HtmlService.createHtmlOutputFromFile("interfazPrincipal").getContent();
+}
 
-  // Buscar filas pendientes de ese supervisor y actualizar
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][1] == supervisor && data[i][5] == "Pendiente") {
-      sheet.getRange(i + 1, 6).setValue(action == "aprobar" ? "Aprobado" : "Rechazado");
-      sheet.getRange(i + 1, 7).setValue(new Date());
+function verificarPassword(form) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetUsuarios = ss.getSheetByName('Usuarios');
+  var dataUsuarios = sheetUsuarios.getDataRange().getValues();
+  var sheetRoles = ss.getSheetByName('Roles');
+  var dataRoles = sheetRoles.getDataRange().getValues();
+
+  Logger.log('Usuario ingresado: ' + form.usuario); // Para depuración
+
+  for (var i = 1; i < dataUsuarios.length; i++) { // Empieza en 1 para saltar headers
+    if (dataUsuarios[i][1] == form.usuario) { // Columna B: Usuario
+      if (dataUsuarios[i][2] == form.contrasena) { // Columna C: Contraseña
+        var usuario = {
+          nombre: dataUsuarios[i][1],
+          roles: []
+        };
+        // Buscar rol en la hoja Roles
+        for (var fila = 1; fila < dataRoles.length; fila++) {
+          if (dataRoles[fila][0] == usuario.nombre) { // Columna A: Usuario
+            usuario.roles = dataRoles[fila]; // Toda la fila de roles
+            break;
+          }
+        }
+        return usuario;
+      } else {
+        throw 'Contraseña incorrecta.';
+      }
     }
   }
-
-  return ContentService.createTextOutput("Solicitud " + action);
+  throw 'Usuario no encontrado.';
 }
