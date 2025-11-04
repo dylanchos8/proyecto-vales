@@ -1,183 +1,141 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Solicitud de Horas Extra - INCOLBEST</title>
-  <style>
-        #encabezado button {
-            background-color:#0098d5; 
-            color:white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 5px;
-            cursor: pointer;
-            justify-content: flex-start;
-            align-items: center;
-        }
-
-        #encabezado button:hover {
-            background-color: #1b4fa3;
-        }
-
-        /* 🔹 Botón dentro del div con class="panel" */
-        .panel button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-
-        .panel button:hover {
-            background-color: #1e7e34;
-        }
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      .boton {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        max-width: 220px;
+      }
+      .boton button {
+        background-color: #0098d5;
+        color: white;
+        padding: 20px;
+        width: 200px;
+        height: 100px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+      }
+      .boton button:hover {
+        background-color: #007bb3;
+      }
+      .boton p {
+        margin-top: 10px;
+        font-size: 14px;
+        line-height: 1.4;
+        color: #333;
+      }
+      #footer {
+        display: flex;
+        justify-content: space-between;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 10px 20px;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      }
+      #footer .copy {
+        flex: 1;
+        text-align: center;
+        font-size: 14px;
+        color: #333;
+      }
+      #footer .img {
+        width: 30px;
+        height: 30px;
+      }
+      .hidden { display: none; }
+      input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+      .login-form { max-width: 400px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+      .animate-spin { animation: spin 1s linear infinite; }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
-</head>
-<body style="margin:0; font-family:Arial, sans-serif; background:linear-gradient(to bottom, #0098d5, #ffffff); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;">
 
-  <!-- Encabezado con logo -->
-  <div id="encabezado" style="width:100%; background-color:#ffffff; padding:15px; text-align:center; border-bottom:3px solid #0098d5;">
-    <button>Atras</button>
-    <img src="https://www.incolbest.com/fileadmin/incolbest/img/ld/bloques-logo.png" alt="INCOLBEST" style="max-width:280px;">
-  </div>
-
-  <!-- Contenedor del formulario tipo login -->
-  <div style="background-color:white; margin-top:40px; padding:40px; border-radius:15px; box-shadow:0 6px 15px rgba(0,0,0,0.15); width:380px; text-align:center; border-top:6px solid #0098d5; transition:transform 0.3s;">
+    <script>
     
-    <h2 style="color:#0098d5; margin-bottom:25px; font-size:22px;">Solicitud de Horas Extra</h2>
-
-    <form id="formulario" style="display:flex; flex-direction:column; gap:18px; text-align:left;">
-      
-      <!-- Supervisor -->
-      <label for="supervisorCorreo" style="color:#0098d5; font-weight:bold; font-size:14px;">📧 Correo del Supervisor</label>
-      <input type="email" id="supervisorCorreo" required 
-             style="padding:12px; border:1px solid #ccc; border-radius:8px; outline:none; font-size:14px; transition:all 0.3s;">
-      
-      <!-- Área -->
-      <label for="area" style="color:#0098d5; font-weight:bold; font-size:14px;">🏭 Área de trabajo</label>
-      <select id="area" required 
-              style="padding:12px; border:1px solid #ccc; border-radius:8px; font-size:14px; transition:all 0.3s;">
-        <option value="">--Seleccione--</option>
-        <option value="Producción">Producción</option>
-        <option value="Mantenimiento">Mantenimiento</option>
-        <option value="Logística">Logística</option>
-      </select>
-
-      <!-- Operarios -->
-      <label style="color:#0098d5; font-weight:bold; font-size:14px;">👷‍♂️ Seleccione Operarios y Turno</label>
-      <div id="operarios" style="margin-bottom:10px;"></div>
-
-      <!-- Botón -->
-      <button type="submit" 
-              style="background-color:#0098d5; color:white; padding:14px; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer; transition:all 0.3s; text-align:center;">
-        Enviar Solicitud
-      </button>
-    </form>
-
-    <p id="respuesta" style="margin-top:20px; color:#0098d5; font-weight:bold;"></p>
-  </div>
-
-  <table style="margin:20px; width:80%; border-collapse:collapse; font-family:Arial, sans-serif; font-size:14px; border:1px solid #ccc;">
-    <thead style="background:#f2f2f2; text-align:left;">
-        <tr>
-            <th style="padding:8px; border:1px solid #ccc;">ID</th>
-            <th style="padding:8px; border:1px solid #ccc;">Usuario</th>
-            <th style="padding:8px; border:1px solid #ccc;">Área</th>
-            <th style="padding:8px; border:1px solid #ccc;">Planta</th>
-            <th style="padding:8px; border:1px solid #ccc;">Turno</th>
-            <th style="padding:8px; border:1px solid #ccc;">Horas Extra</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-        </tr>
-    </tbody>
-</table>
-
-  <script>
-    // Simulación de efectos hover (inputs y botones) en inline CSS
-    document.addEventListener("mouseover", function(e) {
-      if (e.target.tagName === "BUTTON") {
-        e.target.style.backgroundColor = "#007bb2";
+    function IrLogin() {
+      google.script.run
+      .withSuccessHandler(function(html) {
+        document.body.innerHTML = html;
+        })
+        
+        .loadLogin();
       }
-      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") {
-        e.target.style.borderColor = "#0098d5";
-        e.target.style.boxShadow = "0 0 6px rgba(0,152,213,0.5)";
-      }
-    });
+</script>
+  </head>
+  <body style="margin:10px; font-family:Arial, sans-serif; background:linear-gradient(to bottom, #0098d5, #ffffff); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;">
 
-    document.addEventListener("mouseout", function(e) {
-      if (e.target.tagName === "BUTTON") {
-        e.target.style.backgroundColor = "#0098d5";
-      }
-      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") {
-        e.target.style.borderColor = "#ccc";
-        e.target.style.boxShadow = "none";
-      }
-    });
+    <div id="container" style="justify-content:center;">
+      <div id="header" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+        <div class="imagen" style="background-color:#ffffff; border-radius:8px; width: 1200px;">
+          <img src="https://www.incolbest.com/fileadmin/incolbest/img/ld/bloques-logo.png">
+        </div>
+        <p>Bienvenido al sistema de gestión de horas extra, vales y almuerzos de la compañía</p>
+        <p style="background-color:#000000; color:#ffffff; border-radius:5px; text-align:center; width:200px;">¿Cómo desea ingresar?</p>
+      </div>
 
-    // Cuando selecciona un área, cargar operarios desde Apps Script
-    document.getElementById("area").addEventListener("change", function() {
-      const area = this.value;
-      if (!area) return;
+      <div id="botones" style="display:flex; flex-direction:row; align-items:center; justify-content:center; gap:20px;">
+        <div class="boton">
+          <button onclick="IrLogin('jefeArea')">👷‍♂️ <br>Jefe de área</button>
+          <p>Ingresa como jefe de área para asignar y autorizar horas extra a trabajadores</p>
+        </div>
+        <div class="boton">
+          <button onclick="IrLogin('talento')">👷‍♂️<br>Talento y cultura</button>
+          <p>Ingresa como administrador de talento y cultura para gestionar la asistencia, la entrega y la verificación de los vales</p>
+        </div>
+        <div class="boton">
+          <button onclick="IrLogin('restaurante')">👷‍♂️<br>Restaurante</button>
+          <p>Ingresa como gestor de restaurante para validar y supervisar la entrega de almuerzos</p>
+        </div>
+        <div class="boton">
+          <button onclick="IrLogin('aprendiz')">👷‍♂️ <br>Aprendiz</button>
+          <p>Ingresa como aprendiz para consultar vales diarios</p>
+        </div>
+        <div class="boton">
+          <button onclick="IrLogin('consultarVales')">👷‍♂️ <br>Consultar mis vales</button>
+          <p>Consulta los vales que tienes asignados</p>
+        </div>
+      </div>
+    </div>
 
-      google.script.run.withSuccessHandler(function(operarios) {
-        const contenedor = document.getElementById("operarios");
-        contenedor.innerHTML = "";
+    <!-- Formulario de login (oculto inicialmente) -->
+    <div id="login" class="hidden login-form">
+      <h2>Login para <span id="roleText"></span></h2>
+      <form name="userLogin" id="userLogin" onsubmit="enviarFormulario(this)">
+        <div>
+          <label for="usuario">Usuario</label>
+          <input type="text" name="usuario" id="usuario" placeholder="Usuario*" required>
+        </div>
+        <div>
+          <label for="contrasena">Contraseña</label>
+          <input type="password" name="contrasena" id="contrasena" placeholder="Ingresa tu contraseña*" required>
+        </div>
+        <button type="submit" id="submitButton">Login</button>
+        <button type="button" onclick="cancelarLogin()">Cancelar</button>
+      </form>
+      <div id="loading" class="hidden text-center">
+        <div class="animate-spin inline-block w-8 h-8 border-4 border-t-transparent border-[#0098d5] rounded-full"></div>
+        <p>Verificando credenciales...</p>
+      </div>
+      <div id="onError" class="hidden text-center">
+        <p class="text-red-600" id="errorMessage"></p>
+      </div>
+    </div>
 
-        operarios.forEach(op => {
-          const div = document.createElement("div");
-          div.setAttribute("style",
-            "margin:8px 0; padding:10px; border:1px solid #eee; border-radius:8px; background:#f9f9f9; display:flex; align-items:center; gap:8px; transition:all 0.3s;"
-          );
-          div.innerHTML = `
-            <input type="checkbox" id="op${op.id}" value="${op.id}" style="transform:scale(1.2); cursor:pointer;">
-            <label for="op${op.id}" style="flex:1; color:#0098d5; font-size:14px;">${op.nombre} (ID: ${op.id})</label>
-            <select id="turno_op${op.id}" style="padding:6px; border:1px solid #ccc; border-radius:6px; font-size:13px;">
-              <option value="">--Turno--</option>
-              <option value="Diurno">Diurno</option>
-              <option value="Nocturno">Nocturno</option>
-            </select>
-          `;
-          contenedor.appendChild(div);
-        });
-      }).getOperariosPorArea(area);
-    });
-
-    // Enviar formulario
-    document.getElementById("formulario").addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      const supervisorCorreo = document.getElementById("supervisorCorreo").value;
-      const area = document.getElementById("area").value;
-
-      const operarios = [];
-      document.querySelectorAll("#operarios div").forEach(div => {
-        const checkbox = div.querySelector("input[type=checkbox]");
-        const turno = div.querySelector("select").value;
-        if (checkbox.checked && turno) {
-          operarios.push({
-            id: checkbox.value,
-            nombre: div.querySelector("label").innerText,
-            turno: turno
-          });
-        }
-      });
-
-      if (operarios.length === 0) {
-        alert("Seleccione al menos un operario y turno");
-        return;
-      }
-
-      google.script.run.withSuccessHandler(function(respuesta) {
-        document.getElementById("respuesta").innerText = respuesta;
-      }).procesarOrden({
-        supervisorCorreo: supervisorCorreo,
-        area: area,
-        operarios: operarios
-      });
-    });
-  </script>
-</body>
+    <div id="footer">
+      <div class="copy">&copy; INCOLBEST 2025</div>
+      <div class="img">
+        <img src="https://autopartes.somosgrupo-a.com/fileadmin/templates/img/slide-mapas-autopartes.png" style="width:30px; height:30px;">
+      </div>
+    </div>
+  </body>
 </html>
