@@ -1,54 +1,307 @@
-/*let MySheets = SpreadsheetApp.getActiveSpreadsheet();
-let LoginSheet = MySheets.getSheetByName("");
-const SPREADSHEET_ID = "1bVdqtUEhBZ5jYE2LPLA5TG5JqLpble1MsUfcbZszBAY";
-const ss = SpreadsheetApp.openById(SPREADSHEET_ID);*/
+function doGet(e) {
+  const page = e && e.parameter && e.parameter.page ? e.parameter.page : "";
+  let template;
 
-function doGet() {
-  var template = HtmlService.createTemplateFromFile('interfazPrincipal');
-  var html = template.evaluate();
-  return html;
+  switch (page) {
+    case 'supervisor':
+      template = HtmlService.createTemplateFromFile('supervisor');
+      break;
+    case 'talento':
+      template = HtmlService.createTemplateFromFile('talento');
+      break;
+    case 'restaurante':
+      template = HtmlService.createTemplateFromFile('restaurante');
+      break;
+    case 'operador':
+      template = HtmlService.createTemplateFromFile('operador');
+      break;
+    case 'superadmin':
+      template = HtmlService.createTemplateFromFile('superadmin');
+      break;
+    default:
+      template = HtmlService.createTemplateFromFile('login');
+  }
+
+  return template
+    .evaluate()
+    .setTitle("Sistema de Gestión Incolbest")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-function include(fileName) {
-  return HtmlService.createHtmlOutputFromFile(fileName).getContent();
-}
+/**
+ * Valida usuario y devuelve la URL de la página según el rol.
+ */
+function redirigirPorRol(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const hoja = ss.getSheetByName("Usuarios");
+  const datos = hoja.getDataRange().getValues();
 
-function loadLogin() {
-  return HtmlService.createHtmlOutputFromFile("login").getContent();
-}
+  const baseUrl = ScriptApp.getService().getUrl();
 
-function irInterfazPrincipal() {
-  return HtmlService.createHtmlOutputFromFile("interfazPrincipal").getContent();
-}
+  const inputUser = data.usuario.trim().toLowerCase();
+  const inputPass = data.contrasena.trim();
+  const inputRol = data.role.trim().toLowerCase();
 
-function verificarPassword(form) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheetUsuarios = ss.getSheetByName('Usuarios');
-  var dataUsuarios = sheetUsuarios.getDataRange().getValues();
-  var sheetRoles = ss.getSheetByName('Roles');
-  var dataRoles = sheetRoles.getDataRange().getValues();
+  for (let i = 1; i < datos.length; i++) {
+    let [id, usuario, contrasena, rol] = datos[i];
+    usuario = (usuario + "").trim().toLowerCase();
+    contrasena = (contrasena + "").trim();
+    rol = (rol + "").trim().toLowerCase();
 
-  Logger.log('Usuario ingresado: ' + form.usuario); // Para depuración
-
-  for (var i = 1; i < dataUsuarios.length; i++) { // Empieza en 1 para saltar headers
-    if (dataUsuarios[i][1] == form.usuario) { // Columna B: Usuario
-      if (dataUsuarios[i][2] == form.contrasena) { // Columna C: Contraseña
-        var usuario = {
-          nombre: dataUsuarios[i][1],
-          roles: []
-        };
-        // Buscar rol en la hoja Roles
-        for (var fila = 1; fila < dataRoles.length; fila++) {
-          if (dataRoles[fila][0] == usuario.nombre) { // Columna A: Usuario
-            usuario.roles = dataRoles[fila]; // Toda la fila de roles
-            break;
-          }
-        }
-        return usuario;
-      } else {
-        throw 'Contraseña incorrecta.';
-      }
+    if (usuario === inputUser && contrasena === inputPass && rol === inputRol) {
+      Logger.log(`✅ Login correcto para ${usuario} con rol ${rol}`);
+      const urlFinal = `${baseUrl}?page=${rol}`;
+      Logger.log("URL final generada: " + urlFinal);
+      return urlFinal;
     }
   }
-  throw 'Usuario no encontrado.';
+
+  throw new Error("Usuario, contraseña o rol incorrectos.");
+}
+
+// Función para obtener todos los usuarios
+function getUsuarios() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Usuarios');
+  const data = sheet.getDataRange().getValues();
+  const usuarios = [];
+  for (let i = 1; i < data.length; i++) { // Saltar encabezado
+    usuarios.push({
+      id: data[i][0],
+      usuario: data[i][1],
+      contrasena: data[i][2], // No devolver hash por seguridad
+      rol: data[i][3],
+      nombre: data[i][4],
+      area: data[i][5],
+      departamento: data[i][6]
+    });
+  }
+  return usuarios;
+}
+
+// Función para agregar un nuevo usuario
+function addUsuario(data) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Usuarios');
+  const lastRow = sheet.getLastRow();
+  const newId = lastRow; // ID simple basado en fila
+  const hashedPassword = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, data.contrasena)
+    .map(b => ('0' + (b & 0xFF).toString(16)).slice(-2)).join('');
+  sheet.appendRow([newId, data.usuario, hashedPassword, data.rol, data.nombre, data.area, data.departamento]);
+  Logger.log(`Usuario agregado: ${data.usuario}`);
+}
+
+// Función para obtener un usuario por ID
+function getUsuarioById(id) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Usuarios');
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == id) {
+      return {
+        id: data[i][0],
+        usuario: data[i][1],
+        contrasena: '', // No devolver hash
+        rol: data[i][3],
+        nombre: data[i][4],
+        area: data[i][5],
+        departamento: data[i][6]
+      };
+    }
+  }
+  return null;
+}
+
+// Función para actualizar un usuario
+function updateUsuario(data) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Usuarios');
+  const dataRange = sheet.getDataRange().getValues();
+  for (let i = 1; i < dataRange.length; i++) {
+    if (dataRange[i][0] == data.id) {
+      const hashedPassword = data.contrasena ? Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, data.contrasena)
+        .map(b => ('0' + (b & 0xFF).toString(16)).slice(-2)).join('') : dataRange[i][2]; // Mantener hash si no se cambia
+      sheet.getRange(i + 1, 1, 1, 7).setValues([[data.id, data.usuario, hashedPassword, data.rol, data.nombre, data.area, data.departamento]]);
+      Logger.log(`Usuario actualizado: ${data.usuario}`);
+      break;
+    }
+  }
+}
+
+// Función para borrar un usuario
+function deleteUsuario(id) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Usuarios');
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == id) {
+      sheet.deleteRow(i + 1);
+      Logger.log(`Usuario borrado con ID: ${id}`);
+      break;
+    }
+  }
+}
+
+// --- FUNCIONES PARA RESTAURANTE ---
+
+/**
+ * Guarda un menú del día en la hoja "Menus".
+ * Requiere permisos: solo "superadmin" o "supervisor".
+ */
+function guardarMenu(datos) {
+  try {
+    // Verificar permisos
+    const usuarioEmail = Session.getActiveUser().getEmail();
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaUsuarios = ss.getSheetByName("Usuarios");
+    const datosUsuarios = hojaUsuarios.getDataRange().getValues();
+    let rolUsuario = null;
+
+    for (let i = 1; i < datosUsuarios.length; i++) {
+      if (datosUsuarios[i][1].toString().toLowerCase() === usuarioEmail.toLowerCase()) {
+        rolUsuario = datosUsuarios[i][3].toString().toLowerCase();
+        break;
+      }
+    }
+
+    if (!rolUsuario || (rolUsuario !== 'superadmin' && rolUsuario !== 'supervisor')) {
+      throw new Error('Permisos insuficientes. Solo superadmin o supervisor pueden guardar menús.');
+    }
+
+    const hojaMenus = ss.getSheetByName("Menus");
+    if (!hojaMenus) {
+      throw new Error('Hoja "Menus" no encontrada. Créala en la Spreadsheet.');
+    }
+
+    const lastRow = hojaMenus.getLastRow();
+    const newId = lastRow; // ID incremental basado en fila
+    hojaMenus.appendRow([
+      newId,
+      new Date(),
+      datos.entrada,
+      datos.principio,
+      datos.proteina,
+      datos.acompanamiento,
+      datos.ubicacion
+    ]);
+
+    Logger.log(`Menú guardado por ${usuarioEmail} con rol ${rolUsuario}`);
+    return { success: true, message: 'Menú guardado exitosamente' };
+  } catch (error) {
+    Logger.log('Error en guardarMenu: ' + error.message);
+    return { success: false, message: error.message };
+  }
+}
+
+/**
+ * Obtiene todos los menús de la hoja "Menus".
+ */
+function obtenerMenus() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaMenus = ss.getSheetByName("Menus");
+    if (!hojaMenus) {
+      throw new Error('Hoja "Menus" no encontrada.');
+    }
+
+    const data = hojaMenus.getDataRange().getValues();
+    const menus = [];
+    for (let i = 1; i < data.length; i++) {
+      menus.push({
+        id: data[i][0],
+        fecha: data[i][1].toLocaleDateString(),
+        entrada: data[i][2],
+        principio: data[i][3],
+        proteina: data[i][4],
+        acompanamiento: data[i][5],
+        ubicacion: data[i][6]
+      });
+    }
+
+    return menus;
+  } catch (error) {
+    Logger.log('Error en obtenerMenus: ' + error.message);
+    throw new Error('Error al obtener menús: ' + error.message);
+  }
+}
+
+/**
+ * Edita un menú existente en la hoja "Menus" por ID (número de fila).
+ * Requiere permisos: solo "superadmin" o "supervisor".
+ */
+function editarMenu(id, datos) {
+  try {
+    // Verificar permisos
+    const usuarioEmail = Session.getActiveUser().getEmail();
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaUsuarios = ss.getSheetByName("Usuarios");
+    const datosUsuarios = hojaUsuarios.getDataRange().getValues();
+    let rolUsuario = null;
+
+    for (let i = 1; i < datosUsuarios.length; i++) {
+      if (datosUsuarios[i][1].toString().toLowerCase() === usuarioEmail.toLowerCase()) {
+        rolUsuario = datosUsuarios[i][3].toString().toLowerCase();
+        break;
+      }
+    }
+
+    if (!rolUsuario || (rolUsuario !== 'superadmin' && rolUsuario !== 'supervisor')) {
+      throw new Error('Permisos insuficientes.');
+    }
+
+    const hojaMenus = ss.getSheetByName("Menus");
+    if (!hojaMenus) {
+      throw new Error('Hoja "Menus" no encontrada.');
+    }
+
+    const rowIndex = parseInt(id) + 1;
+    if (rowIndex < 2 || rowIndex > hojaMenus.getLastRow()) {
+      throw new Error('ID de menú inválido.');
+    }
+
+    hojaMenus.getRange(rowIndex, 3, 1, 5).setValues([[datos.entrada, datos.principio, datos.proteina, datos.acompanamiento, datos.ubicacion]]);
+    Logger.log(`Menú editado por ${usuarioEmail} en fila ${rowIndex}`);
+    return { success: true, message: 'Menú editado exitosamente' };
+  } catch (error) {
+    Logger.log('Error en editarMenu: ' + error.message);
+    return { success: false, message: error.message };
+  }
+}
+
+/**
+ * Elimina un menú de la hoja "Menus" por ID (número de fila).
+ * Requiere permisos: solo "superadmin" o "supervisor".
+ */
+function eliminarMenu(id) {
+  try {
+    // Verificar permisos
+    const usuarioEmail = Session.getActiveUser().getEmail();
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaUsuarios = ss.getSheetByName("Usuarios");
+    const datosUsuarios = hojaUsuarios.getDataRange().getValues();
+    let rolUsuario = null;
+
+    for (let i = 1; i < datosUsuarios.length; i++) {
+      if (datosUsuarios[i][1].toString().toLowerCase() === usuarioEmail.toLowerCase()) {
+        rolUsuario = datosUsuarios[i][3].toString().toLowerCase();
+        break;
+      }
+    }
+
+    if (!rolUsuario || (rolUsuario !== 'superadmin' && rolUsuario !== 'supervisor')) {
+      throw new Error('Permisos insuficientes.');
+    }
+
+    const hojaMenus = ss.getSheetByName("Menus");
+    if (!hojaMenus) {
+      throw new Error('Hoja "Menus" no encontrada.');
+    }
+
+    const rowIndex = parseInt(id) + 1;
+    if (rowIndex < 2 || rowIndex > hojaMenus.getLastRow()) {
+      throw new Error('ID de menú inválido.');
+    }
+
+    hojaMenus.deleteRow(rowIndex);
+    Logger.log(`Menú eliminado por ${usuarioEmail} en fila ${rowIndex}`);
+    return { success: true, message: 'Menú eliminado exitosamente' };
+  } catch (error) {
+    Logger.log('Error en eliminarMenu: ' + error.message);
+    return { success: false, message: error.message };
+  }
 }
