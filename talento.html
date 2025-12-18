@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <style>
+    body { 
+        font-family: Arial, sans-serif; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: center; 
+        align-items: center; 
+        height: 100vh; 
+        margin: 0; 
+        background: linear-gradient(to bottom left, #0098d5, #ffffff); 
+        text-align: center;
+      }
+  </style>
+  <body>
+    <h2>Bienvenido a la gestion de talento y cultura</h2>
+    <button onclick="cerrarSesion()" 
+        style="background-color:#d9534f; color:white; padding:10px 16px; border:none; border-radius:8px; cursor:pointer;">Cerrar sesión
+</button>
+
+
+
+    <script>
+  function cerrarSesion() {
+    if (confirm("¿Seguro que deseas cerrar sesión?")) {
+      // Opcional: limpiar cualquier almacenamiento local (si lo usas)
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirigir al login principal
+      const BASE_URL = 'https://script.google.com/macros/s/AKfycbyKKm-ONYVXEVg9g4kvIDEAZw7pU2FljvfcqeGl1Hw/exec';
+      window.top.location.href = BASE_URL; // vuelve al login.html
+    }
+  }
+</script>
+
+
+  </body>
+</html>
