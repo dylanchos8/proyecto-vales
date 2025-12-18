@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+    body { 
+        font-family: Arial, sans-serif; 
+        margin: 0; 
+        padding: 0; 
+        background: linear-gradient(to bottom left, #0098d5, #ffffff); 
+        display: flex;
+        height: 100vh;
+      }
+      
+      /* Sidebar */
+      .sidebar {
+        width: 250px;
+        background-color: #333;
+        color: white;
+        padding: 20px;
+        box-sizing: border-box;
+        position: fixed;
+        height: 100%;
+        left: 0;
+        top: 0;
+        overflow-y: auto;
+        transition: width 0.3s;
+      }
+      .sidebar.collapsed {
+        width: 60px;
+      }
+      .sidebar h2 {
+        margin-top: 0;
+        font-size: 18px;
+      }
+      .sidebar ul {
+        list-style: none;
+        padding: 0;
+      }
+      .sidebar li {
+        margin: 15px 0;
+      }
+      .sidebar a {
+        color: white;
+        text-decoration: none;
+        display: block;
+        padding: 10px;
+        border-radius: 4px;
+        transition: background 0.3s;
+      }
+      .sidebar a:hover, .sidebar a.active {
+        background-color: #0098d5;
+      }
+      .sidebar.collapsed a {
+        text-align: center;
+        padding: 10px 0;
+      }
+      .sidebar.collapsed h2, .sidebar.collapsed li span {
+        display: none;
+      }
+      .toggle-btn {
+        display: none;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #0098d5;
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      
+      /* Contenido Principal */
+      .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        flex: 1;
+        box-sizing: border-box;
+        transition: margin-left 0.3s;
+      }
+      .main-content.collapsed {
+        margin-left: 60px;
+      }
+      .section {
+        display: none;
+      }
+      .section.active {
+        display: block;
+      }
+      
+      /* Estilos para la tabla y modales */
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+      button { padding: 5px 10px; margin: 5px; background: #0098d5; color: white; border: none; border-radius: 4px; cursor: pointer; }
+      .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+      .modal-content { background: white; padding: 20px; border-radius: 8px; width: 400px; }
+      input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+      .loading { color: #0098d5; font-style: italic; }
+      
+      /* Responsive */
+      @media (max-width: 768px) {
+        .sidebar { width: 60px; }
+        .main-content { margin-left: 60px; }
+        .toggle-btn { display: block; }
+      }
+    </style>
+  </head>
+  <body onload="initPage()">
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+      <h2>Super Admin</h2>
+      <ul>
+        <li><a href="javascript:void(0)" onclick="showSection('dashboard', this)" class="active">Dashboard</a></li>
+        <li><a href="javascript:void(0)" onclick="showSection('usuarios', this)">Usuarios</a></li>
+        <li><a href="javascript:void(0)" onclick="showSection('reportes', this)">Reportes</a></li>
+        <li><a href="javascript:void(0)" onclick="showSection('configuraciones', this)">Configuraciones</a></li>
+      </ul>
+      <button onclick="cerrarSesion()" style="background-color:#d9534f; color:white; padding:10px 16px; border:none; border-radius:8px; cursor:pointer; position:fixed; bottom:20px; right:20px;">Cerrar sesión</button>
+    </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="main-content" id="mainContent">
+      
+      <!-- Sección Dashboard -->
+      <div id="dashboard" class="section active">
+        <h2>Dashboard</h2>
+        <p>Bienvenido al panel de Super Administrador. Aquí puedes ver estadísticas generales.</p>
+        <!-- Agrega gráficos o widgets aquí -->
+      </div>
+      
+      <!-- Sección Usuarios -->
+      <div id="usuarios" class="section">
+        <h2>Gestión de Usuarios</h2>
+        <button onclick="showAddModal()">Agregar Usuario</button>
+        <div id="loadingIndicator" class="loading">Cargando usuarios...</div>
+        <table id="usuariosTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Usuario</th>
+              <th>Rol</th>
+              <th>Nombre</th>
+              <th>Área</th>
+              <th>Departamento</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="usuariosBody"></tbody>
+        </table>
+      </div>
+      
+      <!-- Sección Reportes -->
+      <div id="reportes" class="section">
+        <h2>Reportes</h2>
+        <p>Aquí puedes generar y ver reportes. (Contenido de ejemplo)</p>
+        <!-- Agrega formularios o gráficos para reportes -->
+      </div>
+      
+      <!-- Sección Configuraciones -->
+      <div id="configuraciones" class="section">
+        <h2>Configuraciones</h2>
+        <p>Ajusta configuraciones del sistema. (Contenido de ejemplo)</p>
+        <!-- Agrega opciones de configuración -->
+      </div>
+      
+      <!-- Modales -->
+      <div id="modalCerrarSesion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); backdrop-filter:blur(2px); justify-content:center; align-items:center; z-index:9999;">
+        <div style="background:white; padding:30px 40px; border-radius:12px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.2); width:300px;">
+          <h3 style="margin-top:0; color:#0f172a;">¿Seguro que quieres cerrar sesión?</h3>
+          <div style="margin-top:20px; display:flex; justify-content:center; gap:15px;">
+            <button onclick="confirmarCerrarSesion()" style="background-color:#d9534f; color:white; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-weight:600;">Sí, cerrar</button>
+            <button onclick="cancelarCerrarSesion()" style="background-color:#ccc; color:#333; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-weight:600;">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="userModal" class="modal">
+        <div class="modal-content">
+          <h3 id="modalTitle">Agregar Usuario</h3>
+          <form id="userForm">
+            <input type="hidden" id="userId">
+            <label>Usuario</label>
+            <input type="text" id="usuario" required>
+            <label>Contraseña</label>
+            <input type="password" id="contrasena" required>
+            <label>Rol</label>
+            <select id="rol" required>
+              <option value="jefeArea">Jefe de área</option>
+              <option value="talento">Talento y cultura</option>
+              <option value="restaurante">Restaurante</option>
+              <option value="aprendiz">Aprendiz</option>
+              <option value="superAdmin">Super Administrador</option>
+              <option value="operador">Operador</option>
+            </select>
+            <label>Nombre</label>
+            <input type="text" id="nombre" required>
+            <label>Área</label>
+            <input type="text" id="area" required>
+            <label>Departamento</label>
+            <input type="text" id="departamento" required>
+            <button type="submit">Guardar</button>
+            <button type="button" onclick="closeModal()">Cancelar</button>
+          </form>
+        </div>
+      </div>
+
+      
+
+    <script>
+    function initPage() {
+      console.log('Página cargada');
+      // Carga automática si la sección "usuarios" está activa
+      const activeSection = document.querySelector('.section.active');
+      if (activeSection && activeSection.id === 'usuarios') {
+        loadUsuarios();
+      }
+    }
+
+    function cerrarSesion() {
+      if (confirm("¿Seguro que deseas cerrar sesión?")) {
+        localStorage.clear();
+        sessionStorage.clear();
+        const BASE_URL = 'https://script.google.com/macros/s/AKfycbyKKm-ONYVXEVg9g4kvIDEAZw7pU2FljvfcqeGl1Hw/exec';
+        window.top.location.href = BASE_URL;
+      }
+    }
+
+    function showSection(sectionId, linkElement) {
+      console.log('Cambiando a sección:', sectionId);
+      try {
+        // Ocultar todas las secciones
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(section => section.classList.remove('active'));
+        
+        // Mostrar la sección seleccionada
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+          targetSection.classList.add('active');
+        } else {
+          console.error('Sección no encontrada:', sectionId);
+          return;
+        }
+        
+        // Actualizar enlace activo
+        const links = document.querySelectorAll('.sidebar a');
+        links.forEach(link => link.classList.remove('active'));
+        linkElement.classList.add('active');
+        
+        // Cargar contenido si es necesario
+        if (sectionId === 'usuarios') {
+          loadUsuarios();
+        }
+      } catch (error) {
+        console.error('Error en showSection:', error);
+      }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('mainContent');
+      sidebar.classList.toggle('collapsed');
+      mainContent.classList.toggle('collapsed');
+    }
+
+    function loadUsuarios() {
+      console.log('Cargando usuarios...');
+      const indicator = document.getElementById('loadingIndicator');
+      if (indicator) indicator.style.display = 'block';
+      
+      google.script.run
+        .withSuccessHandler(function(usuarios) {
+          console.log('Usuarios cargados:', usuarios.length);
+          displayUsuarios(usuarios);
+          if (indicator) indicator.style.display = 'none';
+        })
+        .withFailureHandler(function(error) {
+          console.error('Error al cargar usuarios:', error);
+          if (indicator) indicator.style.display = 'none';
+        })
+        .getUsuarios();
+    }
+
+    function displayUsuarios(usuarios) {
+      console.log('Mostrando usuarios:', usuarios.length);
+      const body = document.getElementById('usuariosBody');
+      body.innerHTML = '';
+      if (usuarios.length === 0) {
+        body.innerHTML = '<tr><td colspan="7">No hay usuarios registrados.</td></tr>';
+        return;
+      }
+      usuarios.forEach(function(user) {
+        const row = body.insertRow();
+        row.insertCell(0).textContent = user.id;
+        row.insertCell(1).textContent = user.usuario;
+        row.insertCell(2).textContent = user.rol;
+        row.insertCell(3).textContent = user.nombre;
+        row.insertCell(4).textContent = user.area;
+        row.insertCell(5).textContent = user.departamento;
+        const actions = row.insertCell(6);
+        actions.innerHTML = '<button onclick="editUser(' + user.id + ')">Editar</button> <button onclick="deleteUser(' + user.id + ')">Borrar</button>';
+      });
+    }
+
+    function showAddModal() {
+      document.getElementById('modalTitle').textContent = 'Agregar Usuario';
+      document.getElementById('userForm').reset();
+      document.getElementById('userModal').style.display = 'flex';
+    }
+
+    function editUser(id) {
+      google.script.run
+        .withSuccessHandler(function(user) {
+          document.getElementById('userId').value = user.id;
+          document.getElementById('usuario').value = user.usuario;
+          document.getElementById('contrasena').value = '';
+          document.getElementById('rol').value = user.rol;
+          document.getElementById('nombre').value = user.nombre;
+          document.getElementById('area').value = user.area;
+          document.getElementById('departamento').value = user.departamento;
+          document.getElementById('modalTitle').textContent = 'Editar Usuario';
+          document.getElementById('userModal').style.display = 'flex';
+        })
+        .getUsuarioById(id);
+    }
+
+    function deleteUser(id) {
+      if (confirm('¿Borrar usuario?')) {
+        google.script.run
+          .withSuccessHandler(loadUsuarios)
+          .deleteUsuario(id);
+      }
+    }
+
+    document.getElementById('userForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const data = {
+        id: document.getElementById('userId').value,
+        usuario: document.getElementById('usuario').value,
+        contrasena: document.getElementById('contrasena').value,
+        rol: document.getElementById('rol').value,
+        nombre: document.getElementById('nombre').value,
+        area: document.getElementById('area').value,
+        departamento: document.getElementById('departamento').value
+      };
+      if (data.id) {
+        google.script.run.withSuccessHandler(closeModal).updateUsuario(data);
+      } else {
+        google.script.run.withSuccessHandler(closeModal).addUsuario(data);
+      }
+      loadUsuarios();
+    });
+
+    function closeModal() {
+      document.getElementById('userModal').style.display = 'none';
+    }
+    </script>
+
+  </body>
+</html>
+
