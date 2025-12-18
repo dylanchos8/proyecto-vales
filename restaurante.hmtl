@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+    body { 
+        font-family: Arial, sans-serif; 
+        margin: 0; 
+        padding: 0; 
+        background: linear-gradient(to bottom left, #0098d5, #ffffff); 
+        display: flex;
+        height: 100vh;
+      }
+      
+      /* Sidebar */
+      .sidebar {
+        width: 250px;
+        background-color: #333;
+        color: white;
+        padding: 20px;
+        box-sizing: border-box;
+        position: fixed;
+        height: 100%;
+        left: 0;
+        top: 0;
+        overflow-y: auto;
+        transition: width 0.3s;
+      }
+      .sidebar.collapsed {
+        width: 60px;
+      }
+      .sidebar h2 {
+        margin-top: 0;
+        font-size: 18px;
+      }
+      .sidebar ul {
+        list-style: none;
+        padding: 0;
+      }
+      .sidebar li {
+        margin: 15px 0;
+      }
+      .sidebar a {
+        color: white;
+        text-decoration: none;
+        display: block;
+        padding: 10px;
+        border-radius: 4px;
+        transition: background 0.3s;
+      }
+      .sidebar a:hover, .sidebar a.active {
+        background-color: #0098d5;
+      }
+      .sidebar.collapsed a {
+        text-align: center;
+        padding: 10px 0;
+      }
+      .sidebar.collapsed h2, .sidebar.collapsed li span {
+        display: none;
+      }
+      .toggle-btn {
+        display: none;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #0098d5;
+        color: white;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      
+      /* Contenido Principal */
+      .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        flex: 1;
+        box-sizing: border-box;
+        transition: margin-left 0.3s;
+      }
+      .main-content.collapsed {
+        margin-left: 60px;
+      }
+      .section {
+        display: none;
+      }
+      .section.active {
+        display: block;
+      }
+      
+      /* Estilos para la tabla y modales */
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+      button { padding: 5px 10px; margin: 5px; background: #0098d5; color: white; border: none; border-radius: 4px; cursor: pointer; }
+      .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+      .modal-content { background: white; padding: 20px; border-radius: 8px; width: 500px; max-height: 80vh; overflow-y: auto; }
+      input, select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+      .dynamic-field { margin-bottom: 10px; }
+      .dynamic-field input { width: calc(100% - 30px); display: inline-block; }
+      .dynamic-field button { width: 25px; padding: 5px; margin-left: 5px; background: #d9534f; color: white; }
+      .add-btn { background: #5cb85c; margin-top: 10px; }
+      .loading { color: #0098d5; font-style: italic; }
+      
+      /* Responsive */
+      @media (max-width: 768px) {
+        .sidebar { width: 60px; }
+        .main-content { margin-left: 60px; }
+        .toggle-btn { display: block; }
+      }
+    </style>
+  </head>
+  <body onload="initPage()">
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+      <h2>Restaurante</h2>
+      <ul>
+        <li><a href="javascript:void(0)" onclick="showSection('dashboard', this)" class="active">Dashboard</a></li>
+        <li><a href="javascript:void(0)" onclick="showSection('menus', this)">Menús</a></li>
+        <li><a href="javascript:void(0)" onclick="showSection('reportes', this)">Reportes</a></li>
+        <li><a href="javascript:void(0)" onclick="showSection('configuraciones', this)">Configuraciones</a></li>
+      </ul>
+      <button onclick="cerrarSesion()" style="background-color:#d9534f; color:white; padding:10px 16px; border:none; border-radius:8px; cursor:pointer; position:fixed; bottom:20px; right:20px;">Cerrar sesión</button>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="main-content" id="mainContent">
+      
+      <!-- Sección Dashboard -->
+      <div id="dashboard" class="section active">
+        <h2>Dashboard</h2>
+        <p>Bienvenido al panel de Restaurante. Aquí puedes gestionar menús y ver estadísticas.</p>
+        <!-- Agrega gráficos o widgets aquí -->
+      </div>
+      
+      <!-- Sección Menús -->
+      <div id="menus" class="section">
+        <h2>Gestión de Menús</h2>
+        <button onclick="showAddMenuModal()">Agregar Menú</button>
+        <div id="loadingIndicator" class="loading">Cargando menús...</div>
+        <table id="menusTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Entrada</th>
+              <th>Principio</th>
+              <th>Proteína</th>
+              <th>Acompañamiento</th>
+              <th>Ubicación</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="menusBody"></tbody>
+        </table>
+      </div>
+      
+      <!-- Sección Reportes -->
+      <div id="reportes" class="section">
+        <h2>Reportes</h2>
+        <p>Aquí puedes generar y ver reportes de menús y pedidos. (Contenido de ejemplo)</p>
+        <!-- Agrega formularios o gráficos para reportes -->
+      </div>
+      
+      <!-- Sección Configuraciones -->
+      <div id="configuraciones" class="section">
+        <h2>Configuraciones</h2>
+        <p>Ajusta configuraciones del restaurante. (Contenido de ejemplo)</p>
+        <!-- Agrega opciones de configuración -->
+      </div>
+      
+      <!-- Modales -->
+      <div id="modalCerrarSesion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); backdrop-filter:blur(2px); justify-content:center; align-items:center; z-index:9999;">
+        <div style="background:white; padding:30px 40px; border-radius:12px; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.2); width:300px;">
+          <h3 style="margin-top:0; color:#0f172a;">¿Seguro que quieres cerrar sesión?</h3>
+          <div style="margin-top:20px; display:flex; justify-content:center; gap:15px;">
+            <button onclick="confirmarCerrarSesion()" style="background-color:#d9534f; color:white; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-weight:600;">Sí, cerrar</button>
+            <button onclick="cancelarCerrarSesion()" style="background-color:#ccc; color:#333; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-weight:600;">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="menuModal" class="modal">
+        <div class="modal-content">
+          <h3 id="modalTitle">Agregar Menú</h3>
+          <form id="menuForm">
+            <input type="hidden" id="menuId">
+            
+            <label>Entrada (mínimo 2 opciones)</label>
+            <div id="entradaContainer">
+              <div class="dynamic-field">
+                <input type="text" placeholder="Opción 1" required>
+                <button type="button" onclick="removeField(this)">-</button>
+              </div>
+              <div class="dynamic-field">
+                <input type="text" placeholder="Opción 2" required>
+                <button type="button" onclick="removeField(this)">-</button>
+              </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addField('entradaContainer')">+ Agregar Opción</button>
+            
+            <label>Principio (mínimo 2 opciones)</label>
+            <div id="principioContainer">
+              <div class="dynamic-field">
+                <input type="text" placeholder="Opción 1" required>
+                <button type="button" onclick="removeField(this)">-</button>
+              </div>
+              <div class="dynamic-field">
+                <input type="text" placeholder="Opción 2" required>
+                <button type="button" onclick="removeField(this)">-</button>
+              </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addField('principioContainer')">+ Agregar Opción</button>
+            
+            <label>Proteína (mínimo 2 opciones)</label>
+            <div id="proteinaContainer">
+              <div class="dynamic-field">
+                <input type="text" placeholder="Opción 1" required>
+                <button type="button" onclick="removeField(this)">-</button>
+              </div>
+              <div class="dynamic-field">
+                <input type="text" placeholder="Opción 2" required>
+                <button type="button" onclick="removeField(this)">-</button>
+              </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addField('proteinaContainer')">+ Agregar Opción</button>
+            
+            <label>Acompañamiento</label>
+            <input type="text" id="acompanamiento" required>
+            
+            <label>Ubicación</label>
+            <select id="ubicacion" required>
+              <option value="fontibon">Fontibon</option>
+              <option value="americas">Americas</option>
+            </select>
+            
+            <button type="submit">Guardar</button>
+            <button type="button" onclick="closeModal()">Cancelar</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    <script>
+    function initPage() {
+      console.log('Página cargada');
+      const activeSection = document.querySelector('.section.active');
+      if (activeSection && activeSection.id === 'menus') {
+        loadMenus();
+      }
+    }
+
+    function cerrarSesion() {
+      document.getElementById('modalCerrarSesion').style.display = 'flex';
+    }
+
+    function confirmarCerrarSesion() {
+      localStorage.clear();
+      sessionStorage.clear();
+      const BASE_URL = 'https://script.google.com/macros/s/AKfycbyKKm-ONYVXEVg9g4kvIDEAZw7pU2FljvfcqeGl1Hw/exec';
+      window.top.location.href = BASE_URL;
+    }
+
+    function cancelarCerrarSesion() {
+      document.getElementById('modalCerrarSesion').style.display = 'none';
+    }
+
+    function showSection(sectionId, linkElement) {
+      console.log('Cambiando a sección:', sectionId);
+      try {
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(section => section.classList.remove('active'));
+        
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+          targetSection.classList.add('active');
+        } else {
+          console.error('Sección no encontrada:', sectionId);
+          return;
+        }
+        
+        const links = document.querySelectorAll('.sidebar a');
+        links.forEach(link => link.classList.remove('active'));
+        linkElement.classList.add('active');
+        
+        if (sectionId === 'menus') {
+          loadMenus();
+        }
+      } catch (error) {
+        console.error('Error en showSection:', error);
+      }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('mainContent');
+      sidebar.classList.toggle('collapsed');
+      mainContent.classList.toggle('collapsed');
+    }
+
+    function loadMenus() {
+      console.log('Cargando menús...');
+      const indicator = document.getElementById('loadingIndicator');
+      if (indicator) indicator.style.display = 'block';
+      
+      google.script.run
+        .withSuccessHandler(function(menus) {
+          console.log('Menús cargados:', menus.length);
+          displayMenus(menus);
+          if (indicator) indicator.style.display = 'none';
+        })
+        .withFailureHandler(function(error) {
+          console.error('Error al cargar menús:', error);
+          if (indicator) indicator.style.display = 'none';
+        })
+        .obtenerMenus();
+    }
+
+    function displayMenus(menus) {
+      console.log('Mostrando menús:', menus.length);
+      const body = document.getElementById('menusBody');
+      body.innerHTML = '';
+      if (menus.length === 0) {
+        body.innerHTML = '<tr><td colspan="8">No hay menús registrados.</td></tr>';
+        return;
+      }
+      menus.forEach(function(menu) {
+        const row = body.insertRow();
+        row.insertCell(0).textContent = menu.id;
+        row.insertCell(1).textContent = menu.fecha;
+        row.insertCell(2).textContent = menu.entrada;
+        row.insertCell(3).textContent = menu.principio;
+        row.insertCell(4).textContent = menu.proteina;
+        row.insertCell(5).textContent = menu.acompanamiento;
+        row.insertCell(6).textContent = menu.ubicacion;
+        const actions = row.insertCell(7);
+        actions.innerHTML = '<button onclick="editMenu(' + menu.id + ')">Editar</button> <button onclick="deleteMenu(' + menu.id + ')">Borrar</button>';
+      });
+    }
+
+    function showAddMenuModal() {
+      document.getElementById('modalTitle').textContent = 'Agregar Menú';
+      document.getElementById('menuForm').reset();
+      resetDynamicFields();
+      document.getElementById('menuModal').style.display = 'flex';
+    }
+
+    function resetDynamicFields() {
+      // Reset a 2 opciones por defecto
+      document.getElementById('entradaContainer').innerHTML = `
+        <div class="dynamic-field">
+          <input type="text" placeholder="Opción 1" required>
+          <button type="button" onclick="removeField(this)">-</button>
+        </div>
+        <div class="dynamic-field">
+          <input type="text" placeholder="Opción 2" required>
+          <button type="button" onclick="removeField(this)">-</button>
+        </div>
+      `;
+      document.getElementById('principioContainer').innerHTML = `
+        <div class="dynamic-field">
+          <input type="text" placeholder="Opción 1" required>
+          <button type="button" onclick="removeField(this)">-</button>
+        </div>
+        <div class="dynamic-field">
+          <input type="text" placeholder="Opción 2" required>
+          <button type="button" onclick="removeField(this)">-</button>
+        </div>
+      `;
+      document.getElementById('proteinaContainer').innerHTML = `
+        <div class="dynamic-field">
+          <input type="text" placeholder="Opción 1" required>
+          <button type="button" onclick="removeField(this)">-</button>
+        </div>
+        <div class="dynamic-field">
+          <input type="text" placeholder="Opción 2" required>
+          <button type="button" onclick="removeField(this)">-</button>
+        </div>
+      `;
+    }
+
+    function addField(containerId) {
+      const container = document.getElementById(containerId);
+      const fields = container.querySelectorAll('.dynamic-field');
+      if (fields.length >= 5) {
+        alert('Máximo 5 opciones permitidas.');
+        return;
+      }
+      const newField = document.createElement('div');
+      newField.className = 'dynamic-field';
+      newField.innerHTML = `
+        <input type="text" placeholder="Opción ${fields.length + 1}" required>
+        <button type="button" onclick="removeField(this)">-</button>
+      `;
+      container.appendChild(newField);
+    }
+
+        function removeField(button) {
+      const field = button.parentElement;
+      const container = field.parentElement;
+      const fields = container.querySelectorAll('.dynamic-field');
+      if (fields.length > 2) {
+        container.removeChild(field);
+      } else {
+        alert('Debes tener al menos 2 opciones.');
+      }
+    }
+
+    function editMenu(id) {
+      google.script.run
+        .withSuccessHandler(function(menus) {
+          const menu = menus.find(m => m.id == id);
+          if (menu) {
+            document.getElementById('menuId').value = menu.id;
+            populateDynamicFields('entradaContainer', menu.entrada);
+            populateDynamicFields('principioContainer', menu.principio);
+            populateDynamicFields('proteinaContainer', menu.proteina);
+            document.getElementById('acompanamiento').value = menu.acompanamiento;
+            document.getElementById('ubicacion').value = menu.ubicacion;
+            document.getElementById('modalTitle').textContent = 'Editar Menú';
+            document.getElementById('menuModal').style.display = 'flex';
+          } else {
+            alert('Menú no encontrado.');
+          }
+        })
+        .obtenerMenus();
+    }
+
+    function populateDynamicFields(containerId, value) {
+      const container = document.getElementById(containerId);
+      const options = value.split(',').map(opt => opt.trim());
+      container.innerHTML = '';
+      options.forEach((opt, index) => {
+        const field = document.createElement('div');
+        field.className = 'dynamic-field';
+        field.innerHTML = `
+          <input type="text" value="${opt}" placeholder="Opción ${index + 1}" required>
+          <button type="button" onclick="removeField(this)">-</button>
+        `;
+        container.appendChild(field);
+      });
+    }
+
+    function deleteMenu(id) {
+      if (confirm('¿Borrar menú?')) {
+        google.script.run
+          .withSuccessHandler(function(result) {
+            if (result.success) {
+              loadMenus();
+            } else {
+              alert('Error: ' + result.message);
+            }
+          })
+          .eliminarMenu(id);
+      }
+    }
+
+    document.getElementById('menuForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const data = {
+        id: document.getElementById('menuId').value,
+        entrada: getFieldValues('entradaContainer'),
+        principio: getFieldValues('principioContainer'),
+        proteina: getFieldValues('proteinaContainer'),
+        acompanamiento: document.getElementById('acompanamiento').value,
+        ubicacion: document.getElementById('ubicacion').value
+      };
+      if (data.id) {
+        google.script.run.withSuccessHandler(function(result) {
+          if (result.success) {
+            closeModal();
+            loadMenus();
+          } else {
+            alert('Error: ' + result.message);
+          }
+        }).editarMenu(data.id, data);
+      } else {
+        google.script.run.withSuccessHandler(function(result) {
+          if (result.success) {
+            closeModal();
+            loadMenus();
+          } else {
+            alert('Error: ' + result.message);
+          }
+        }).guardarMenu(data);
+      }
+    });
+
+    function getFieldValues(containerId) {
+      const container = document.getElementById(containerId);
+      const inputs = container.querySelectorAll('input');
+      return Array.from(inputs).map(input => input.value.trim()).filter(val => val !== '');
+    }
+
+    function closeModal() {
+      document.getElementById('menuModal').style.display = 'none';
+    }
+    </script>
+
+  </body>
+</html>
