@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+    body { 
+        font-family: Arial, sans-serif; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: center; 
+        align-items: center; 
+        height: 100vh; 
+        margin: 0; 
+        background: linear-gradient(to bottom left, #0098d5, #ffffff); 
+        text-align: center;
+      }
+  </style>
+  </head>
+  <body>
+
+    <!-- Modal de confirmación -->
+    <div id="modalCerrarSesion" 
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background-color:rgba(0,0,0,0.5); backdrop-filter:blur(2px);
+            justify-content:center; align-items:center; z-index:9999;">
+            <div style="background:white; padding:30px 40px; border-radius:12px; text-align:center; 
+              box-shadow:0 4px 20px rgba(0,0,0,0.2); width:300px;">
+              <h3 style="margin-top:0; color:#0f172a;">¿Seguro que quieres cerrar sesión?</h3>
+              <div style="margin-top:20px; display:flex; justify-content:center; gap:15px;">
+                <button onclick="confirmarCerrarSesion()" 
+                style="background-color:#d9534f; color:white; border:none; padding:10px 18px; 
+                     border-radius:8px; cursor:pointer; font-weight:600;">Sí, cerrar
+                </button>
+                
+                <button onclick="cancelarCerrarSesion()" 
+                style="background-color:#ccc; color:#333; border:none; padding:10px 18px; 
+                border-radius:8px; cursor:pointer; font-weight:600;">Cancelar
+                </button>
+              </div>
+            </div>
+    </div>
+
+
+
+
+
+    <h2>Bienvenido, Supervisor</h2>
+    <p>Aquí puedes asignar y autorizar horas extra a trabajadores.</p>
+    <!-- Agrega funcionalidades aquí, ej. tablas para gestionar horas -->
+    <button onclick="cerrarSesion()" 
+        style="background-color:#d9534f; color:white; padding:10px 16px; border:none; border-radius:8px; cursor:pointer;">Cerrar sesión
+</button>
+
+
+
+    <script>
+  function cerrarSesion() {
+    if (confirm("¿Seguro que deseas cerrar sesión?")) {
+      // Opcional: limpiar cualquier almacenamiento local (si lo usas)
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirigir al login principal
+      const BASE_URL = 'https://script.google.com/macros/s/AKfycbyKKm-ONYVXEVg9g4kvIDEAZw7pU2FljvfcqeGl1Hw/exec';
+      window.top.location.href = BASE_URL; // vuelve al login.html
+    }
+  }
+</script>
+
+  </body>
+</html>
