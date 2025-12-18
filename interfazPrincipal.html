@@ -5,14 +5,15 @@
     <style>
       .boton {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
+        justify-content: center;
         text-align: center;
         max-width: 220px;
       }
       .boton button {
         background-color: #0098d5;
-        color: white;
+        color: black;
         padding: 20px;
         width: 200px;
         height: 100px;
@@ -80,10 +81,9 @@
           <img src="https://www.incolbest.com/fileadmin/incolbest/img/ld/bloques-logo.png">
         </div>
         <p>Bienvenido al sistema de gestión de horas extra, vales y almuerzos de la compañía</p>
-        <p style="background-color:#000000; color:#ffffff; border-radius:5px; text-align:center; width:200px;">¿Cómo desea ingresar?</p>
       </div>
 
-      <div id="botones" style="display:flex; flex-direction:row; align-items:center; justify-content:center; gap:20px;">
+      <div id="botones">
         <div class="boton">
           <button onclick="IrLogin('jefeArea')">👷‍♂️ <br>Jefe de área</button>
           <p>Ingresa como jefe de área para asignar y autorizar horas extra a trabajadores</p>
@@ -107,29 +107,7 @@
       </div>
     </div>
 
-    <!-- Formulario de login (oculto inicialmente) -->
-    <div id="login" class="hidden login-form">
-      <h2>Login para <span id="roleText"></span></h2>
-      <form name="userLogin" id="userLogin" onsubmit="enviarFormulario(this)">
-        <div>
-          <label for="usuario">Usuario</label>
-          <input type="text" name="usuario" id="usuario" placeholder="Usuario*" required>
-        </div>
-        <div>
-          <label for="contrasena">Contraseña</label>
-          <input type="password" name="contrasena" id="contrasena" placeholder="Ingresa tu contraseña*" required>
-        </div>
-        <button type="submit" id="submitButton">Login</button>
-        <button type="button" onclick="cancelarLogin()">Cancelar</button>
-      </form>
-      <div id="loading" class="hidden text-center">
-        <div class="animate-spin inline-block w-8 h-8 border-4 border-t-transparent border-[#0098d5] rounded-full"></div>
-        <p>Verificando credenciales...</p>
-      </div>
-      <div id="onError" class="hidden text-center">
-        <p class="text-red-600" id="errorMessage"></p>
-      </div>
-    </div>
+   
 
     <div id="footer">
       <div class="copy">&copy; INCOLBEST 2025</div>
@@ -139,3 +117,4 @@
     </div>
   </body>
 </html>
+
