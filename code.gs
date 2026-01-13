@@ -137,6 +137,80 @@ function deleteUsuario(id) {
   }
 }
 
+// Función para buscar usuarios
+// Función para buscar usuarios con filtros
+function buscarUsuarios(filtros) {
+  try {
+    // Verificar permisos: solo superadmin
+    const usuarioEmail = Session.getActiveUser().getEmail();
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaUsuarios = ss.getSheetByName("Usuarios");
+    const datosUsuarios = hojaUsuarios.getDataRange().getValues();
+    let rolUsuario = null;
+
+    for (let i = 1; i < datosUsuarios.length; i++) {
+      if (datosUsuarios[i][1].toString().toLowerCase() === usuarioEmail.toLowerCase()) {
+        rolUsuario = datosUsuarios[i][3].toString().toLowerCase();
+        break;
+      }
+    }
+
+    if (!rolUsuario || rolUsuario !== 'superadmin') {
+      throw new Error('Permisos insuficientes. Solo superadmin puede buscar usuarios.');
+    }
+
+    // Obtener todos los usuarios
+    const usuarios = [];
+    for (let i = 1; i < datosUsuarios.length; i++) {
+      usuarios.push({
+        id: datosUsuarios[i][0],
+        usuario: datosUsuarios[i][1],
+        rol: datosUsuarios[i][3],
+        nombre: datosUsuarios[i][4],
+        area: datosUsuarios[i][5],
+        departamento: datosUsuarios[i][6],
+      });
+    }
+
+    // Aplicar filtros (coincidencias parciales, case-insensitive)
+    const resultados = usuarios.filter(user => {
+      return Object.keys(filtros).every(key => {
+        if (!filtros[key]) return true;  // Si el filtro está vacío, no filtrar
+        const valorFiltro = filtros[key].toString().toLowerCase();
+        const valorUsuario = (user[key] || '').toString().toLowerCase();
+        return valorUsuario.includes(valorFiltro);
+      });
+    });
+
+    Logger.log(`Búsqueda realizada por ${usuarioEmail}: ${resultados.length} resultados`);
+    return resultados;
+  } catch (error) {
+    Logger.log('Error en buscarUsuarios: ' + error.message);
+    throw new Error('Error al buscar usuarios: ' + error.message);
+  }
+}
+
+function displayUsuarios(usuarios) {
+  console.log('Mostrando usuarios:', usuarios.length);
+  const body = document.getElementById('usuariosBody');
+  body.innerHTML = '';
+  if (usuarios.length === 0) {
+    body.innerHTML = '<tr><td colspan="8">No hay usuarios registrados.</td></tr>';  // Actualizado a 8 columnas
+    return;
+  }
+  usuarios.forEach(function(user) {
+    const row = body.insertRow();
+    row.insertCell(0).textContent = user.id;
+    row.insertCell(1).textContent = user.usuario;
+    row.insertCell(2).textContent = user.rol;
+    row.insertCell(3).textContent = user.nombre;
+    row.insertCell(4).textContent = user.area;
+    row.insertCell(5).textContent = user.departamento;
+    const actions = row.insertCell(7);  
+    actions.innerHTML = '<button onclick="editUser(' + user.id + ')">Editar</button> <button onclick="deleteUser(' + user.id + ')">Borrar</button>';
+  });
+}
+
 // --- FUNCIONES PARA RESTAURANTE ---
 
 /**
@@ -305,3 +379,9 @@ function eliminarMenu(id) {
     return { success: false, message: error.message };
   }
 }
+
+
+
+
+
+
