@@ -385,3 +385,81 @@ function eliminarMenu(id) {
 
 
 
+// @ts-nocheck
+const SPREADSHEET_ID = '1whmFVBbvtoWxz3mcGBzQ2kDkyXZN1EpG3pRNRsE3CEQ'; 
+const HOJA_HORAS_EXTRA = "HorasExtra";
+const COLUMNAS_HORAS_EXTRA = 7; 
+
+function doGet() {
+  return HtmlService.createTemplateFromFile("index")
+    .evaluate()
+    .setTitle("Incolbest - Gestión de Horas")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function include(filename) {
+  return HtmlService.createTemplateFromFile(filename).evaluate().getContent();
+}
+
+// NUEVA: Función para leer los datos de la hoja
+// Sustituye solo esta función en tu Código.gs
+function getTrabajadoresData() {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(HOJA_HORAS_EXTRA);
+    if (!sheet) return [];
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) return []; // Si solo está el encabezado, devuelve vacío
+    
+    // Obtenemos los datos y los convertimos a texto para evitar errores con fechas
+    const data = sheet.getRange(2, 1, lastRow - 1, COLUMNAS_HORAS_EXTRA).getDisplayValues();
+    return data;
+  } catch (e) {
+    Logger.log("Error en getTrabajadoresData: " + e.toString());
+    return [];
+  }
+}
+
+function saveAsignacion(data) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(HOJA_HORAS_EXTRA);
+    sheet.appendRow([data.area, data.supervisor, data.cedula, data.trabajador, data.fecha, data.turno, data.horas]);
+    return { success: true, message: "¡Asignación guardada con éxito!" };
+  } catch (error) {
+    return { success: false, message: "Error: " + error.message };
+  }
+}
+
+function enviarSolicitudEmail(data) {
+  try {
+    const supervisorEmail = Session.getActiveUser().getEmail();
+    let filasHtml = "";
+    data.seleccionados.forEach(emp => {
+      filasHtml += `<tr>
+        <td style="border:1px solid #ddd;padding:8px;">${emp[3]}</td>
+        <td style="border:1px solid #ddd;padding:8px;text-align:center;">${emp[2]}</td>
+        <td style="border:1px solid #ddd;padding:8px;text-align:center;">${emp[4]}</td>
+        <td style="border:1px solid #ddd;padding:8px;text-align:center;"><b>${emp[6]}</b></td>
+      </tr>`;
+    });
+
+    const htmlBody = `<div style="font-family:Arial;border:1px solid #1E2C65;padding:20px;border-radius:10px;max-width:600px;">
+      <h2 style="color:#1E2C65;border-bottom:2px solid #009DDF;">Solicitud de Horas Extra</h2>
+      <p><strong>Área:</strong> ${data.area}</p>
+      <p><strong>Solicitado por:</strong> ${supervisorEmail}</p>
+      <table style="width:100%;border-collapse:collapse;margin-top:15px;">
+        <thead><tr style="background:#1E2C65;color:white;">
+          <th style="padding:10px;">Trabajador</th><th>Cédula</th><th>Fecha</th><th>Horas</th>
+        </tr></thead>
+        <tbody>${filasHtml}</tbody>
+      </table>
+    </div>`;
+
+    MailApp.sendEmail({ to: data.correoJefe, subject: "SOLICITUD HORAS EXTRA - " + data.area, htmlBody: htmlBody });
+    return { success: true, message: "Correo enviado a " + data.correoJefe };
+  } catch (e) {
+    return { success: false, message: e.toString() };
+  }
+}
