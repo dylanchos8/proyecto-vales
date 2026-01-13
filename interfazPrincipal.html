@@ -3,118 +3,69 @@
   <head>
     <base target="_top">
     <style>
-      .boton {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        max-width: 220px;
-      }
-      .boton button {
-        background-color: #0098d5;
-        color: black;
-        padding: 20px;
-        width: 200px;
-        height: 100px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s;
+    body { 
+        font-family: Arial, sans-serif; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: center; 
+        align-items: center; 
+        height: 100vh; 
+        margin: 0; 
+        background: linear-gradient(to bottom left, #0098d5, #ffffff); 
         text-align: center;
       }
-      .boton button:hover {
-        background-color: #007bb3;
-      }
-      .boton p {
-        margin-top: 10px;
-        font-size: 14px;
-        line-height: 1.4;
-        color: #333;
-      }
-      #footer {
-        display: flex;
-        justify-content: space-between;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        padding: 10px 20px;
-        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-      }
-      #footer .copy {
-        flex: 1;
-        text-align: center;
-        font-size: 14px;
-        color: #333;
-      }
-      #footer .img {
-        width: 30px;
-        height: 30px;
-      }
-      .hidden { display: none; }
-      input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
-      .login-form { max-width: 400px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-      .animate-spin { animation: spin 1s linear infinite; }
-      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+  </style>
+  </head>
+  <body>
+
+    <!-- Modal de confirmación -->
+    <div id="modalCerrarSesion" 
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background-color:rgba(0,0,0,0.5); backdrop-filter:blur(2px);
+            justify-content:center; align-items:center; z-index:9999;">
+            <div style="background:white; padding:30px 40px; border-radius:12px; text-align:center; 
+              box-shadow:0 4px 20px rgba(0,0,0,0.2); width:300px;">
+              <h3 style="margin-top:0; color:#0f172a;">¿Seguro que quieres cerrar sesión?</h3>
+              <div style="margin-top:20px; display:flex; justify-content:center; gap:15px;">
+                <button onclick="confirmarCerrarSesion()" 
+                style="background-color:#d9534f; color:white; border:none; padding:10px 18px; 
+                     border-radius:8px; cursor:pointer; font-weight:600;">Sí, cerrar
+                </button>
+                
+                <button onclick="cancelarCerrarSesion()" 
+                style="background-color:#ccc; color:#333; border:none; padding:10px 18px; 
+                border-radius:8px; cursor:pointer; font-weight:600;">Cancelar
+                </button>
+              </div>
+            </div>
+    </div>
+
+
+
+
+
+    <h2>Bienvenido, Supervisor</h2>
+    <p>Aquí puedes asignar y autorizar horas extra a trabajadores.</p>
+    <!-- Agrega funcionalidades aquí, ej. tablas para gestionar horas -->
+    <button onclick="cerrarSesion()" 
+        style="background-color:#d9534f; color:white; padding:10px 16px; border:none; border-radius:8px; cursor:pointer;">Cerrar sesión
+</button>
+
+
 
     <script>
-    
-    function IrLogin() {
-      google.script.run
-      .withSuccessHandler(function(html) {
-        document.body.innerHTML = html;
-        })
-        
-        .loadLogin();
-      }
+  function cerrarSesion() {
+    if (confirm("¿Seguro que deseas cerrar sesión?")) {
+      // Opcional: limpiar cualquier almacenamiento local (si lo usas)
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirigir al login principal
+      const BASE_URL = 'https://script.google.com/macros/s/AKfycbyKKm-ONYVXEVg9g4kvIDEAZw7pU2FljvfcqeGl1Hw/exec';
+      window.top.location.href = BASE_URL; // vuelve al login.html
+    }
+  }
 </script>
-  </head>
-  <body style="margin:10px; font-family:Arial, sans-serif; background:linear-gradient(to bottom, #0098d5, #ffffff); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;">
 
-    <div id="container" style="justify-content:center;">
-      <div id="header" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
-        <div class="imagen" style="background-color:#ffffff; border-radius:8px; width: 1200px;">
-          <img src="https://www.incolbest.com/fileadmin/incolbest/img/ld/bloques-logo.png">
-        </div>
-        <p>Bienvenido al sistema de gestión de horas extra, vales y almuerzos de la compañía</p>
-      </div>
-
-      <div id="botones">
-        <div class="boton">
-          <button onclick="IrLogin('jefeArea')">👷‍♂️ <br>Jefe de área</button>
-          <p>Ingresa como jefe de área para asignar y autorizar horas extra a trabajadores</p>
-        </div>
-        <div class="boton">
-          <button onclick="IrLogin('talento')">👷‍♂️<br>Talento y cultura</button>
-          <p>Ingresa como administrador de talento y cultura para gestionar la asistencia, la entrega y la verificación de los vales</p>
-        </div>
-        <div class="boton">
-          <button onclick="IrLogin('restaurante')">👷‍♂️<br>Restaurante</button>
-          <p>Ingresa como gestor de restaurante para validar y supervisar la entrega de almuerzos</p>
-        </div>
-        <div class="boton">
-          <button onclick="IrLogin('aprendiz')">👷‍♂️ <br>Aprendiz</button>
-          <p>Ingresa como aprendiz para consultar vales diarios</p>
-        </div>
-        <div class="boton">
-          <button onclick="IrLogin('consultarVales')">👷‍♂️ <br>Consultar mis vales</button>
-          <p>Consulta los vales que tienes asignados</p>
-        </div>
-      </div>
-    </div>
-
-   
-
-    <div id="footer">
-      <div class="copy">&copy; INCOLBEST 2025</div>
-      <div class="img">
-        <img src="https://autopartes.somosgrupo-a.com/fileadmin/templates/img/slide-mapas-autopartes.png" style="width:30px; height:30px;">
-      </div>
-    </div>
   </body>
 </html>
-
